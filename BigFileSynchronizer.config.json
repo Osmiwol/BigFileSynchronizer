@@ -1,0 +1,41 @@
+{
+  "Project": "BigFileSynchronizer",
+  "Cloud": "GoogleDrive",
+  "Paths": [
+    "Assets/",
+    "StreamingAssets/"
+  ],
+  "ArchiveFormat": "zip",
+  "MaxArchiveSizeMB": 750,
+  "MinFileSizeMB": 5,
+  "IncludeExtensions": [
+    ".fbx",
+    ".obj",
+    ".blend",
+    ".dae",
+    ".3ds",
+    ".gltf",
+    ".glb",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".tga",
+    ".bmp",
+    ".psd",
+    ".tiff",
+    ".exr",
+    ".mp3",
+    ".wav",
+    ".ogg",
+    ".flac",
+    ".aiff",
+    ".m4a",
+    ".txt",
+    ".csv",
+    ".json",
+    ".xml",
+    ".ini",
+    ".shader",
+    ".cginc"
+  ]
+}

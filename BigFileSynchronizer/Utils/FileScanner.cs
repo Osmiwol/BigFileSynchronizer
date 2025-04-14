@@ -13,6 +13,11 @@ namespace BigFileSynchronizer.Utils
             var result = new List<string>();
             long minBytes = config.MinFileSizeMB * 1024L * 1024L;
 
+            Console.WriteLine("[DEBUG] config == null? " + (config == null));
+            Console.WriteLine("[DEBUG] config.Paths == null? " + (config.Paths == null));
+            Console.WriteLine("[DEBUG] Paths.Count: " + config.Paths?.Count);
+
+
             foreach (var basePath in config.Paths)
             {
                 if (!Directory.Exists(basePath))

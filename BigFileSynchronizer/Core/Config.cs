@@ -1,22 +1,50 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace BigFileSynchronizer.Core
 {
     public class Config
     {
+        [JsonProperty("Project")]
         public string Project { get; set; }
-        public string Cloud { get; set; }
-        public List<string> Paths { get; set; }
-        public string ArchiveFormat { get; set; }
-        public int MaxArchiveSizeMB { get; set; }
-        public int MinFileSizeMB { get; set; }
-        public List<string> IncludeExtensions { get; set; }
 
-        public static Config Load(string path) { return null; }
-        public void Save(string path) { }
+        [JsonProperty("Cloud")]
+        public string Cloud { get; set; }
+
+        [JsonProperty("Paths")]
+        public List<string> Paths { get; set; } = new();
+
+        [JsonProperty("ArchiveFormat")]
+        public string ArchiveFormat { get; set; }
+
+        [JsonProperty("MaxArchiveSizeMB")]
+        public int MaxArchiveSizeMB { get; set; }
+
+        [JsonProperty("MinFileSizeMB")]
+        public int MinFileSizeMB { get; set; }
+
+        [JsonProperty("IncludeExtensions")]
+        public List<string> IncludeExtensions { get; set; } = new();
+
+        public static Config Load(string path)
+        {
+            if (!File.Exists(path))
+                throw new FileNotFoundException("Config file not found", path);
+
+            var json = File.ReadAllText(path);
+            var config = JsonConvert.DeserializeObject<Config>(json) ?? new Config();
+
+            config.Paths ??= new List<string>();
+            config.IncludeExtensions ??= new List<string>();
+
+            return config;
+        }
+
+        public void Save(string path)
+        {
+            var json = JsonConvert.SerializeObject(this, Formatting.Indented);
+            File.WriteAllText(path, json);
+        }
     }
 }

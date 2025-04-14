@@ -23,8 +23,7 @@ namespace BigFileSynchronizer.Commands
             string configPath = Path.Combine(root, "BigFileSynchronizer.config.json");
             if (!File.Exists(configPath))
             {
-                Console.WriteLine("[Init] Creating default config...");
-
+                Console.WriteLine("[Init] (Re)creating default config...");
                 var config = new Config
                 {
                     Project = Path.GetFileName(root),
@@ -32,18 +31,19 @@ namespace BigFileSynchronizer.Commands
                     Paths = new() { "Assets/", "StreamingAssets/" },
                     ArchiveFormat = "zip",
                     MaxArchiveSizeMB = 750,
-                    MinFileSizeMB = 5,
+                    MinFileSizeMB = 2,
                     IncludeExtensions = new()
-                    {
-                        ".fbx", ".obj", ".blend", ".dae", ".3ds", ".gltf", ".glb",
-                        ".png", ".jpg", ".jpeg", ".tga", ".bmp", ".psd", ".tiff", ".exr",
-                        ".mp3", ".wav", ".ogg", ".flac", ".aiff", ".m4a",
-                        ".txt", ".csv", ".json", ".xml", ".ini", ".shader", ".cginc"
-                    }
+    {
+        ".fbx", ".obj", ".blend", ".dae", ".3ds", ".gltf", ".glb",
+        ".png", ".jpg", ".jpeg", ".tga", ".bmp", ".psd", ".tiff", ".exr",
+        ".mp3", ".wav", ".ogg", ".flac", ".aiff", ".m4a",
+        ".txt", ".csv", ".json", ".xml", ".ini", ".shader", ".cginc"
+    }
                 };
 
                 string json = JsonConvert.SerializeObject(config, Formatting.Indented);
                 File.WriteAllText(configPath, json);
+
             }
             else
             {
@@ -55,16 +55,10 @@ namespace BigFileSynchronizer.Commands
             string linksPath = Path.Combine(stateDir, "drive_links.json");
             Directory.CreateDirectory(stateDir);
 
-            if (!File.Exists(linksPath))
-            {
-                var empty = new DriveLinks();
-                empty.Save(linksPath);
-                Console.WriteLine("[Init] Empty drive_links.json created.");
-            }
-            else
-            {
-                Console.WriteLine("[Init] drive_links.json already exists.");
-            }
+            Console.WriteLine("[Init] Resetting drive_links.json...");
+            var empty = new DriveLinks();
+            empty.Save(linksPath);
+
 
             // 4. Создание git hook
             string hookPath = Path.Combine(root, ".git", "hooks", "pre-push");
