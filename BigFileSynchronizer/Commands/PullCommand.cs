@@ -14,8 +14,8 @@ namespace BigFileSynchronizer.Commands
         {
             Console.WriteLine("[Pull] Checking state...");
 
-            string configPath = "BigFileSynchronizer.config.json";
-            string driveLinksPath = Path.Combine(".state", "drive_links.json");
+            string configPath = Path.Combine(".bfs", "config.json");
+            string driveLinksPath = Path.Combine(".bfs", "drive_links.json");
             string archiveFolder = "upload_mock";
 
             if (!File.Exists(configPath) || !File.Exists(driveLinksPath))

@@ -11,8 +11,9 @@ namespace BigFileSynchronizer.Commands
     {
         public static void Execute()
         {
-            string configPath = Path.Combine("BigFileSynchronizer.config.json");
-            string driveLinksPath = Path.Combine(".state", "drive_links.json");
+            string configPath = Path.Combine(".bfs", "config.json");
+            string driveLinksPath = Path.Combine(".bfs", "drive_links.json");
+
 
             if (!File.Exists(configPath))
             {
@@ -52,13 +53,20 @@ namespace BigFileSynchronizer.Commands
             Console.WriteLine($"[Push] Archiving {filesToUpload.Count} new/changed files...");
 
             Directory.CreateDirectory("build");
-            string archiveName = $"archive_{DateTime.Now:yyyyMMdd_HHmmss}.zip";
+            // Генерация driveId — можно взять хеш первого файла (или всей пачки, если хочешь)
+            string driveId = Hasher.ComputeSHA256(filesToUpload[0]);
+            string archiveName = $"archive_{driveId}.zip";
             string archivePath = Path.Combine("build", archiveName);
 
+            // Архивация
             Archiver.CreateZip(filesToUpload, Directory.GetCurrentDirectory(), archivePath);
 
-            string driveId = CloudUploader.Upload(archivePath);
+            // Копирование в upload_mock/
+            string uploadPath = Path.Combine("upload_mock", archiveName);
+            Directory.CreateDirectory("upload_mock");
+            File.Copy(archivePath, uploadPath, overwrite: true);
 
+            // Обновление кэша
             foreach (var file in filesToUpload)
             {
                 var size = new FileInfo(file).Length;
@@ -69,11 +77,10 @@ namespace BigFileSynchronizer.Commands
                     DriveId = driveId,
                     Size = size,
                     Sha256 = hash,
-                    UploadedAt = now
+                    UploadedAt = DateTime.UtcNow
                 };
             }
-
-            Directory.CreateDirectory(".state");
+            
             driveLinks.Save(driveLinksPath);
 
             Console.WriteLine("[Push] Upload and state update complete.");

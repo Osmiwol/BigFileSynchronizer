@@ -27,6 +27,10 @@ class Programm
             case "pull":
                 PullCommand.Execute();
                 break;
+            case "reset":
+                ResetCommand.Execute();
+                break;
+
             default:
                 Console.WriteLine($"Unknown command: {args[0]}");
                 HelpCommand.Execute();
