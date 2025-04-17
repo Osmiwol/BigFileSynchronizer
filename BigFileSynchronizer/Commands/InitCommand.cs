@@ -12,18 +12,18 @@ namespace BigFileSynchronizer.Commands
         {
             string root = Directory.GetCurrentDirectory();
 
-            // Проверка на git-репозиторий
+            // 1. Проверка на git-репозиторий
             if (!Directory.Exists(Path.Combine(root, ".git")))
             {
                 Console.WriteLine("[Init] Not a git repository.");
                 return;
             }
 
-            // Создание директории конфигов
+            // 2. Создание директории конфигов
             string configDir = Path.Combine(root, ".bfs");
             Directory.CreateDirectory(configDir);
 
-            // config.json
+            // 3. Создание config.json
             string configPath = Path.Combine(configDir, "config.json");
             Console.WriteLine("[Init] (Re)creating config.json...");
             var config = new Config
@@ -45,53 +45,36 @@ namespace BigFileSynchronizer.Commands
             string json = JsonConvert.SerializeObject(config, Formatting.Indented);
             File.WriteAllText(configPath, json);
 
-            // drive_links.json
+            // 4. Создание drive_links.json
             string linksPath = Path.Combine(configDir, "drive_links.json");
             Console.WriteLine("[Init] Resetting drive_links.json...");
             var empty = new DriveLinks();
             empty.Save(linksPath);
 
-            // Git hooks
-            string hooksDir = Path.Combine(root, ".git", "hooks");
-            Directory.CreateDirectory(hooksDir);
+            // 5. Создание универсального pre-push hook
+            string hookPath = Path.Combine(root, ".git", "hooks", "pre-push");
+            File.WriteAllText(hookPath, GenerateUniversalHook(), new UTF8Encoding(false));
+            MakeExecutable(hookPath);
 
-            // 1. Bash-совместимый (Linux/Mac/Git Bash)
-            string bashHookPath = Path.Combine(hooksDir, "pre-push");
-            File.WriteAllText(bashHookPath, GenerateBashHook(), new UTF8Encoding(false));
-            MakeExecutable(bashHookPath);
-
-            // 2. Batch-совместимый (CMD/Visual Studio)
-            string cmdHookPath = Path.Combine(hooksDir, "pre-push.cmd");
-            File.WriteAllText(cmdHookPath, GenerateCmdHook(), new UTF8Encoding(false));
-
-            Console.WriteLine("[Init] Git hooks installed (bash + cmd).");
+            Console.WriteLine("[Init] Git pre-push hook installed (universal).");
             Console.WriteLine("[Init] Initialization complete.");
         }
 
-        private static string GenerateBashHook()
+        private static string GenerateUniversalHook()
         {
-            return """
-            #!/bin/bash
-            echo "[BigFileSynchronizer] Syncing assets before push..."
-            ./BigFileSynchronizer.exe push
-            if [ $? -ne 0 ]; then
-                echo "[BigFileSynchronizer] Sync failed. Push aborted."
-                exit 1
-            fi
-            """;
-        }
-
-        private static string GenerateCmdHook()
-        {
-            return """
-            @echo off
-            echo [BigFileSynchronizer] Syncing assets before push...
-            BigFileSynchronizer.exe push
-            if %ERRORLEVEL% NEQ 0 (
-                echo [BigFileSynchronizer] Sync failed. Push aborted.
-                exit /B 1
-            )
-            """;
+            return
+                "#!/bin/sh\n" +
+                "echo \"[BFS] Syncing assets before push...\"\n" +
+                "case \"$SHELL\" in\n" +
+                "  */bash*) ./BigFileSynchronizer.exe push ;;\n" +
+                "  */sh*) ./BigFileSynchronizer.exe push ;;\n" +
+                "  *) cmd /c BigFileSynchronizer.exe push ;;\n" +
+                "esac\n" +
+                "result=$?\n" +
+                "if [ $result -ne 0 ]; then\n" +
+                "  echo \"[BFS] Sync failed. Push aborted.\"\n" +
+                "  exit 1\n" +
+                "fi\n";
         }
 
         private static void MakeExecutable(string path)
@@ -113,7 +96,7 @@ namespace BigFileSynchronizer.Commands
             }
             catch
             {
-                // игнорируем — безопасно
+                // Windows — безопасно игнорировать
             }
         }
     }
