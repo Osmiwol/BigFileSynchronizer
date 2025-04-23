@@ -13,22 +13,14 @@ namespace BigFileSynchronizer.Commands
         {
             string configPath = Path.Combine(".bfs", "config.json");
             string driveLinksPath = Path.Combine(".bfs", "drive_links.json");
-
-
-            if (!File.Exists(configPath))
-            {
-                Console.WriteLine("[Push] config.json not found.");
-                return;
-            }
+            string serviceAccountPath = Path.Combine(".bfs", "service_account.json");
 
             var config = Config.Load(configPath);
             var driveLinks = DriveLinks.LoadOrEmpty(driveLinksPath);
 
+            // 1. Найти файлы
             var allFiles = FileScanner.ScanFiles(config);
-            Console.WriteLine($"[Push] Found {allFiles.Count} matching files.");
-
             var filesToUpload = new List<string>();
-            var now = DateTime.UtcNow;
 
             foreach (var file in allFiles)
             {
@@ -38,7 +30,7 @@ namespace BigFileSynchronizer.Commands
                 if (driveLinks.Files.TryGetValue(file, out var entry))
                 {
                     if (entry.Size == size && entry.Sha256 == hash)
-                        continue; // файл не изменился
+                        continue;
                 }
 
                 filesToUpload.Add(file);
@@ -50,23 +42,21 @@ namespace BigFileSynchronizer.Commands
                 return;
             }
 
-            Console.WriteLine($"[Push] Archiving {filesToUpload.Count} new/changed files...");
-
-            Directory.CreateDirectory("build");
-            // Генерация driveId — можно взять хеш первого файла (или всей пачки, если хочешь)
+            // 2. Архивация
             string driveId = Hasher.ComputeSHA256(filesToUpload[0]);
             string archiveName = $"archive_{driveId}.zip";
             string archivePath = Path.Combine("build", archiveName);
+            Directory.CreateDirectory("build");
 
-            // Архивация
             Archiver.CreateZip(filesToUpload, Directory.GetCurrentDirectory(), archivePath);
 
-            // Копирование в upload_mock/
-            string uploadPath = Path.Combine("upload_mock", archiveName);
-            Directory.CreateDirectory("upload_mock");
-            File.Copy(archivePath, uploadPath, overwrite: true);
+            // 3. Загрузка в Google Drive
+            var uploader = new GoogleDriveUploader(serviceAccountPath, config.CloudFolderId);
+            string uploadedId = uploader.UploadFile(archivePath);
+            Console.WriteLine($"[Push] Uploaded to Google Drive: ID={uploadedId}");
 
-            // Обновление кэша
+            // 4. Обновление кэша
+            var now = DateTime.UtcNow;
             foreach (var file in filesToUpload)
             {
                 var size = new FileInfo(file).Length;
@@ -74,16 +64,18 @@ namespace BigFileSynchronizer.Commands
 
                 driveLinks.Files[file] = new DriveLinks.DriveLinkEntry
                 {
-                    DriveId = driveId,
+                    DriveId = uploadedId,
                     Size = size,
                     Sha256 = hash,
-                    UploadedAt = DateTime.UtcNow
+                    UploadedAt = now
                 };
             }
-            
+
+            Directory.CreateDirectory(".bfs");
             driveLinks.Save(driveLinksPath);
 
             Console.WriteLine("[Push] Upload and state update complete.");
+
         }
     }
 }

@@ -88,3 +88,7 @@ upload_mock/
 # Ignore all bin/ and obj/ folders recursively
 bin/
 obj/
+
+# Google Drive API key
+.bfs/service_account.json
+service_account.json

@@ -10,6 +10,8 @@ namespace BigFileSynchronizer.Commands
     {
         public static void Execute()
         {
+            
+
             string root = Directory.GetCurrentDirectory();
 
             // 1. Проверка на git-репозиторий

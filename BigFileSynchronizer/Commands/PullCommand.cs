@@ -12,20 +12,13 @@ namespace BigFileSynchronizer.Commands
     {
         public static void Execute()
         {
-            Console.WriteLine("[Pull] Checking state...");
-
             string configPath = Path.Combine(".bfs", "config.json");
             string driveLinksPath = Path.Combine(".bfs", "drive_links.json");
-            string archiveFolder = "upload_mock";
-
-            if (!File.Exists(configPath) || !File.Exists(driveLinksPath))
-            {
-                Console.WriteLine("[Pull] Config or state not found.");
-                return;
-            }
+            string serviceAccountPath = Path.Combine(".bfs", "service_account.json");
 
             var config = Config.Load(configPath);
             var driveLinks = DriveLinks.LoadOrEmpty(driveLinksPath);
+            var uploader = new GoogleDriveUploader(serviceAccountPath);
 
             int restored = 0;
 
@@ -40,38 +33,36 @@ namespace BigFileSynchronizer.Commands
 
                 Console.WriteLine($"[Pull] Restoring: {filePath}");
 
-                string archiveName = $"archive_{entry.DriveId}.zip";
-                string archivePath = Path.Combine(archiveFolder, archiveName);
+                string tempPath = Path.Combine("build", $"restore_{entry.DriveId}.zip");
+                Directory.CreateDirectory("build");
 
-                if (!File.Exists(archivePath))
-                {
-                    Console.WriteLine($"[Pull] Archive not found: {archiveName}");
-                    continue;
-                }
+                uploader.DownloadFile(entry.DriveId, tempPath);
 
-                try
+                using var archive = ZipFile.OpenRead(tempPath);
+                var found = false;
+
+                foreach (var zipEntry in archive.Entries)
                 {
-                    using var archive = ZipFile.OpenRead(archivePath);
-                    var entryInZip = archive.Entries.FirstOrDefault(e => e.FullName.Replace('\\', '/') == filePath.Replace('\\', '/'));
-                    if (entryInZip == null)
+                    string zipPath = zipEntry.FullName.Replace('\\', '/');
+                    string normalizedTarget = filePath.Replace('\\', '/');
+
+                    if (string.Equals(zipPath, normalizedTarget, StringComparison.OrdinalIgnoreCase))
                     {
-                        Console.WriteLine($"[Pull] File not found in archive: {filePath}");
-                        continue;
+                        Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+                        zipEntry.ExtractToFile(filePath, overwrite: true);
+                        Console.WriteLine($"[Pull] Extracted: {filePath}");
+                        restored++;
+                        found = true;
+                        break;
                     }
-
-                    Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
-                    entryInZip.ExtractToFile(filePath, overwrite: true);
-
-                    Console.WriteLine($"[Pull] Extracted: {filePath}");
-                    restored++;
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[Pull] Error restoring {filePath}: {ex.Message}");
-                }
+
+                if (!found)
+                    Console.WriteLine($"[Pull] File not found in archive: {filePath}");
             }
 
             Console.WriteLine($"[Pull] Done. Restored {restored} file(s).");
+
         }
     }
 }

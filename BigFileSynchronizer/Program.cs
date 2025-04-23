@@ -30,6 +30,9 @@ class Programm
             case "reset":
                 ResetCommand.Execute();
                 break;
+            case "auth":
+                AuthCommand.Execute(args);
+                break;
 
             default:
                 Console.WriteLine($"Unknown command: {args[0]}");

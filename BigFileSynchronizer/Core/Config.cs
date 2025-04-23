@@ -27,17 +27,14 @@ namespace BigFileSynchronizer.Core
         [JsonProperty("IncludeExtensions")]
         public List<string> IncludeExtensions { get; set; } = new();
 
+        [JsonProperty("GoogleDriveFolderId")]
+        public string? CloudFolderId { get; set; }
+
         public static Config Load(string path)
         {
-            if (!File.Exists(path))
-                throw new FileNotFoundException("Config file not found", path);
-
-            var json = File.ReadAllText(path);
-            var config = JsonConvert.DeserializeObject<Config>(json) ?? new Config();
-
+            var config = JsonConvert.DeserializeObject<Config>(File.ReadAllText(path)) ?? new Config();
             config.Paths ??= new List<string>();
             config.IncludeExtensions ??= new List<string>();
-
             return config;
         }
 
