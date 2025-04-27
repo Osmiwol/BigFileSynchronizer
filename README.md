@@ -68,8 +68,8 @@ No Git LFS, no Dropbox hacking, no manual steps.
 - [x] Local file scanner with extension & size filter
 - [x] Archive creation (`.zip`)
 - [x] Mock uploader with cache
-- [ ] Real Google Drive integration
-- [ ] `pull` command to restore missing assets
+- [x] Real Google Drive integration
+- [x] `pull` command to restore missing assets
 - [ ] Support for Godot / Unreal / GameMaker
 - [ ] GUI version (Pro)
 - [ ] Multi-cloud support (Dropbox, S3, etc.)
