@@ -76,6 +76,11 @@ No Git LFS, no Dropbox hacking, no manual steps.
 
 ---
 
+## Setup
+👉 Need help setting up Google Drive? [See full setup guide](./SETUP_GOOGLE_DRIVE.md)
+👉 See all available CLI commands: [COMMANDS.md](./docs/COMMANDS.md)
+
+
 ## 📜 License
 
 MIT — use it, modify it, integrate it.  
@@ -111,10 +116,15 @@ git push
 ```json
 {
   "paths": [ "Assets/", "StreamingAssets/" ],
-  "minFileSizeMB": 5,
+  "minFileSizeMB": 2,
   "includeExtensions": [".fbx", ".png", ".wav"]
 }
 ```
+
+
+## Setup
+👉 Если нужна помощь с настройкой Google Disk? [See full setup guide](./SETUP_GOOGLE_DRIVE.md)
+👉 Посмотреть все доступные CLI команды: [COMMANDS.md](./docs/COMMANDS.md)
 
 ---
 
