@@ -65,6 +65,7 @@ sysinfo.txt
 *.FBX
 *.fbx
 *.exe
+*.zip
 
 # Crashlytics generated file
 crashlytics-build.properties

@@ -15,6 +15,12 @@ namespace BigFileSynchronizer.Commands
             DeleteFile(".git/hooks/pre-push.cmd");
 
             Console.WriteLine("[Reset] Note: BigFileSynchronizer.exe was not deleted (currently running). Delete manually if needed.");
+            DeleteFile(hookPath);
+
+            DeleteFile(hookPath);
+
+            DeleteFile(hookPath);
+
             Console.WriteLine("[Reset] Done.");
         }
 

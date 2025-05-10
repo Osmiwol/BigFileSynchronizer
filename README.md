@@ -68,13 +68,18 @@ No Git LFS, no Dropbox hacking, no manual steps.
 - [x] Local file scanner with extension & size filter
 - [x] Archive creation (`.zip`)
 - [x] Mock uploader with cache
-- [ ] Real Google Drive integration
-- [ ] `pull` command to restore missing assets
+- [x] Real Google Drive integration
+- [x] `pull` command to restore missing assets
 - [ ] Support for Godot / Unreal / GameMaker
 - [ ] GUI version (Pro)
 - [ ] Multi-cloud support (Dropbox, S3, etc.)
 
 ---
+
+## Setup
+👉 Need help setting up Google Drive? [See full setup guide](./SETUP_GOOGLE_DRIVE.md)
+👉 See all available CLI commands: [COMMANDS.md](./docs/COMMANDS.md)
+
 
 ## 📜 License
 
@@ -111,10 +116,15 @@ git push
 ```json
 {
   "paths": [ "Assets/", "StreamingAssets/" ],
-  "minFileSizeMB": 5,
+  "minFileSizeMB": 2,
   "includeExtensions": [".fbx", ".png", ".wav"]
 }
 ```
+
+
+## Setup
+👉 Если нужна помощь с настройкой Google Disk? [See full setup guide](./SETUP_GOOGLE_DRIVE.md)
+👉 Посмотреть все доступные CLI команды: [COMMANDS.md](./docs/COMMANDS.md)
 
 ---
 
