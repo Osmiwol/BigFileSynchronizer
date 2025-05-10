@@ -1,4 +1,5 @@
-﻿using System;
+﻿// ResetCommand.cs
+using System;
 using System.IO;
 
 namespace BigFileSynchronizer.Commands
@@ -8,18 +9,16 @@ namespace BigFileSynchronizer.Commands
         public static void Execute()
         {
             DeleteDir(".bfs");
-            DeleteDir("upload_mock");
             DeleteDir("build");
 
-            DeleteFile("BigFileSynchronizer.exe");
-            DeleteFile("BigFileSynchronizer.pdb");
+            DeleteFile(".git/hooks/pre-push");
+            DeleteFile(".git/hooks/pre-push.cmd");
 
-            string hookPath = Path.Combine(".git", "hooks", "pre-push");
-            DeleteFile(hookPath);
-
+            Console.WriteLine("[Reset] Note: BigFileSynchronizer.exe was not deleted (currently running). Delete manually if needed.");
             Console.WriteLine("[Reset] Done.");
         }
 
+        // Deletes a directory and all its contents if it exists
         private static void DeleteDir(string path)
         {
             if (Directory.Exists(path))
@@ -29,12 +28,20 @@ namespace BigFileSynchronizer.Commands
             }
         }
 
+        // Deletes a file if it exists and is accessible
         private static void DeleteFile(string path)
         {
             if (File.Exists(path))
             {
-                File.Delete(path);
-                Console.WriteLine($"[Reset] Removed file: {path}");
+                try
+                {
+                    File.Delete(path);
+                    Console.WriteLine($"[Reset] Removed file: {path}");
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    Console.WriteLine($"[Reset] Skipped deleting {path} (access denied).");
+                }
             }
         }
     }

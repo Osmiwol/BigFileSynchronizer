@@ -1,4 +1,5 @@
-﻿using System;
+﻿// HelpCommand.cs
+using System;
 
 namespace BigFileSynchronizer.Commands
 {
@@ -6,16 +7,20 @@ namespace BigFileSynchronizer.Commands
     {
         public static void Execute()
         {
-            Console.WriteLine("BigFileSynchronizer CLI — автоматическая загрузка крупных ассетов в облако при git push.");
+            Console.WriteLine("BigFileSynchronizer — available commands:");
             Console.WriteLine();
-            Console.WriteLine("Доступные команды:");
-            Console.WriteLine("  init     — создать config.json, .state/, и git pre-push hook");
-            Console.WriteLine("  push     — заархивировать и загрузить новые или изменённые ассеты");
-            Console.WriteLine("  scan     — просканировать проект на крупные ассеты и предложить их добавить в config");
-            Console.WriteLine("  help     — показать это сообщение");
+            Console.WriteLine("  init      — initialize project (creates .bfs/, hook, config)");
+            Console.WriteLine("  auth      — authorize Google Drive via service account");
+            Console.WriteLine("  push      — upload new or changed assets to Google Drive");
+            Console.WriteLine("  pull      — restore missing files from cloud archive");
+            Console.WriteLine("  scan      — show list of assets that would be uploaded");
+            Console.WriteLine("  reset     — remove generated files and state");
+            Console.WriteLine("  help      — show this help message");
             Console.WriteLine();
-            Console.WriteLine("Пример:");
-            Console.WriteLine("  BigFileSynchronizer.exe push");
+            Console.WriteLine("Examples:");
+            Console.WriteLine("  BigFileSynchronizer.exe init");
+            Console.WriteLine("  BigFileSynchronizer.exe auth service_account.json");
+            Console.WriteLine("  git push  → will trigger auto push to cloud");
         }
     }
 }

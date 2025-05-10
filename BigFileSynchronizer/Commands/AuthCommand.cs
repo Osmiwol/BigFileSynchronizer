@@ -38,7 +38,7 @@ namespace BigFileSynchronizer.Commands
             File.Copy(inputPath, targetPath, overwrite: true);
             Console.WriteLine("[Auth] service_account.json copied to .bfs/");
 
-            // Активация через Drive API
+            // Activation Drive API
             try
             {
                 var uploader = new GoogleDriveUploader(targetPath);

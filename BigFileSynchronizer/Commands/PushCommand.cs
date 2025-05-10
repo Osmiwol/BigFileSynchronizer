@@ -1,7 +1,7 @@
-﻿using System;
+﻿// PushCommand.cs
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using BigFileSynchronizer.Core;
 using BigFileSynchronizer.Utils;
 
@@ -15,10 +15,15 @@ namespace BigFileSynchronizer.Commands
             string driveLinksPath = Path.Combine(".bfs", "drive_links.json");
             string serviceAccountPath = Path.Combine(".bfs", "service_account.json");
 
+            if (!File.Exists(configPath) || !File.Exists(serviceAccountPath))
+            {
+                Console.WriteLine("[Push] Missing config or service account.");
+                return;
+            }
+
             var config = Config.Load(configPath);
             var driveLinks = DriveLinks.LoadOrEmpty(driveLinksPath);
 
-            // 1. Найти файлы
             var allFiles = FileScanner.ScanFiles(config);
             var filesToUpload = new List<string>();
 
@@ -42,20 +47,22 @@ namespace BigFileSynchronizer.Commands
                 return;
             }
 
-            // 2. Архивация
+            // Get git branch and commit info
+            string branch = GitHelper.GetBranchName();
+            string commit = GitHelper.GetFullCommitHash();
             string driveId = Hasher.ComputeSHA256(filesToUpload[0]);
+
+            // Create archive
             string archiveName = $"archive_{driveId}.zip";
             string archivePath = Path.Combine("build", archiveName);
-            Directory.CreateDirectory("build");
+            Archiver.CreateZip(filesToUpload, Directory.GetCurrentDirectory(), archivePath, branch, commit);
 
-            Archiver.CreateZip(filesToUpload, Directory.GetCurrentDirectory(), archivePath);
-
-            // 3. Загрузка в Google Drive
+            // Upload archive to Google Drive
             var uploader = new GoogleDriveUploader(serviceAccountPath, config.CloudFolderId);
             string uploadedId = uploader.UploadFile(archivePath);
             Console.WriteLine($"[Push] Uploaded to Google Drive: ID={uploadedId}");
 
-            // 4. Обновление кэша
+            // Update drive_links
             var now = DateTime.UtcNow;
             foreach (var file in filesToUpload)
             {
@@ -71,11 +78,8 @@ namespace BigFileSynchronizer.Commands
                 };
             }
 
-            Directory.CreateDirectory(".bfs");
             driveLinks.Save(driveLinksPath);
-
             Console.WriteLine("[Push] Upload and state update complete.");
-
         }
     }
 }

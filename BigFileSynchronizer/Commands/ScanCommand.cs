@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// ScanCommand.cs
+using System;
 using System.IO;
-using System.Linq;
 using BigFileSynchronizer.Core;
 using BigFileSynchronizer.Utils;
-using Newtonsoft.Json;
 
 namespace BigFileSynchronizer.Commands
 {
@@ -12,66 +10,31 @@ namespace BigFileSynchronizer.Commands
     {
         public static void Execute()
         {
-            string configPath = "BigFileSynchronizer.config.json";
+            string configPath = Path.Combine(".bfs", "config.json");
+
             if (!File.Exists(configPath))
             {
-                Console.WriteLine("[Scan] config.json не найден. Сначала вызовите init.");
+                Console.WriteLine("[Scan] Config not found: .bfs/config.json");
                 return;
             }
 
             var config = Config.Load(configPath);
-            var allFiles = FileScanner.ScanFiles(config);
+            var files = FileScanner.ScanFiles(config);
 
-            if (allFiles.Count == 0)
+            if (files.Count == 0)
             {
-                Console.WriteLine("[Scan] Крупные ассеты не найдены.");
+                Console.WriteLine("[Scan] No matching files found.");
                 return;
             }
 
-            // Определим директории, которых нет в config.Paths
-            var detectedDirs = allFiles
-                .Select(path => Path.GetDirectoryName(path))
-                .Where(d => !string.IsNullOrEmpty(d))
-                .Select(PathNormalizer.ToUnixPath)
-                .Distinct()
-                .ToList();
-
-            var newDirs = detectedDirs
-                .Where(d => !config.Paths.Any(p => PathNormalizer.ToUnixPath(p).Equals(d, StringComparison.OrdinalIgnoreCase)))
-                .ToList();
-
-            if (newDirs.Count == 0)
+            Console.WriteLine("[Scan] Files to be considered for upload:");
+            foreach (var file in files)
             {
-                Console.WriteLine("[Scan] Новых директорий не обнаружено.");
-                return;
+                var sizeMB = new FileInfo(file).Length / (1024.0 * 1024.0);
+                Console.WriteLine($"  {file} ({sizeMB:F1} MB)");
             }
 
-            Console.WriteLine("[Scan] Найдены потенциальные новые директории с крупными файлами:");
-            foreach (var dir in newDirs)
-                Console.WriteLine("  " + dir);
-
-            Console.WriteLine("Добавить их в config.json? [Y/n]");
-            var answer = Console.ReadLine()?.Trim().ToLower();
-
-            if (answer is "n" or "no")
-            {
-                Console.WriteLine("[Scan] Конфиг не изменён.");
-                return;
-            }
-
-            config.Paths.AddRange(newDirs);
-            config.Paths = config.Paths.Distinct().OrderBy(p => p).ToList();
-
-            string updated = JsonConvert.SerializeObject(config, Formatting.Indented);
-            File.WriteAllText(configPath, updated);
-
-            Console.WriteLine("[Scan] Обновлён config.json.");
+            Console.WriteLine($"[Scan] Total: {files.Count} file(s).");
         }
-    }
-
-    internal static class PathNormalizer
-    {
-        public static string ToUnixPath(string path) =>
-            path.Replace('\\', '/').TrimEnd('/');
     }
 }

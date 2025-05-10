@@ -12,31 +12,25 @@ namespace BigFileSynchronizer.Utils
         {
             var result = new List<string>();
             long minBytes = config.MinFileSizeMB * 1024L * 1024L;
+            var extensions = new HashSet<string>(config.IncludeExtensions.Select(e => e.ToLowerInvariant()));
 
-            Console.WriteLine("[DEBUG] config == null? " + (config == null));
-            Console.WriteLine("[DEBUG] config.Paths == null? " + (config.Paths == null));
-            Console.WriteLine("[DEBUG] Paths.Count: " + config.Paths?.Count);
+            Console.WriteLine("[Scan] Scanning all files in current directory...");
 
+            var allFiles = Directory.EnumerateFiles(Directory.GetCurrentDirectory(), "*.*", SearchOption.AllDirectories);
 
-            foreach (var basePath in config.Paths)
+            foreach (var file in allFiles)
             {
-                if (!Directory.Exists(basePath))
-                    continue;
+                string ext = Path.GetExtension(file).ToLowerInvariant();
+                if (!extensions.Contains(ext)) continue;
 
-                var files = Directory.EnumerateFiles(basePath, "*.*", SearchOption.AllDirectories)
-                    .Where(path =>
-                    {
-                        var ext = Path.GetExtension(path).ToLowerInvariant();
-                        if (!config.IncludeExtensions.Contains(ext))
-                            return false;
+                long size = new FileInfo(file).Length;
+                if (size < minBytes) continue;
 
-                        var info = new FileInfo(path);
-                        return info.Length >= minBytes;
-                    });
-
-                result.AddRange(files);
+                string relativePath = Path.GetRelativePath(Directory.GetCurrentDirectory(), file);
+                result.Add(relativePath);
             }
 
+            Console.WriteLine($"[Scan] Found {result.Count} matching file(s).");
             return result;
         }
     }
