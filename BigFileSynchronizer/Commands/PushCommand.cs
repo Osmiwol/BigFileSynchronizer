@@ -11,9 +11,10 @@ namespace BigFileSynchronizer.Commands
     {
         public static void Execute()
         {
-            string configPath = Path.Combine(".bfs", "config.json");
-            string driveLinksPath = Path.Combine(".bfs", "drive_links.json");
-            string serviceAccountPath = Path.Combine(".bfs", "service_account.json");
+            string configPath = Path.Combine(".config_bfs", "config.json");
+            string driveLinksPath = Path.Combine(".config_bfs", "drive_links.json");
+            string serviceAccountPath = Path.Combine(".config_bfs", "service_account.json");
+            string cacheDir = "bfs_cache";
 
             if (!File.Exists(configPath) || !File.Exists(serviceAccountPath))
             {
@@ -48,9 +49,10 @@ namespace BigFileSynchronizer.Commands
             }
 
             // Get git branch and commit info
-            string branch = GitHelper.GetBranchName() ?? "nogit";
+            string branch = GitHelper.GetBranchName();
             string commit = GitHelper.GetFullCommitHash();
-            string driveId = Hasher.ComputeSHA256(filesToUpload[0]);            
+            string projectName = config.Project ?? "project";
+            string shortHash = commit.Length >= 8 ? commit.Substring(0, 8) : driveLinks.GetHashCode().ToString("x8");
 
             if (string.IsNullOrWhiteSpace(commit) || commit.Length < 7)
             {
@@ -58,14 +60,18 @@ namespace BigFileSynchronizer.Commands
                 commit = Guid.NewGuid().ToString("N"); // random unique ID
             }
 
+            // Archive index logic
+            Directory.CreateDirectory(cacheDir);
+            int archiveIndex = Directory.GetFiles(cacheDir, $"{projectName}_*.zip").Length + 1;
+            string archiveIndexStr = archiveIndex.ToString("D3"); // 001, 002, ...
 
             // Generate human-readable manifest file and include it in the archive
             string manifestPath = ManifestGenerator.CreateManifest(branch, commit, filesToUpload);
             filesToUpload.Add(manifestPath); // Include manifest in the archive
 
-            // Create archive with files + manifest
-            string archiveName = $"archive_{driveId}.zip";
-            string archivePath = Path.Combine("build", archiveName);
+            // Create archive with descriptive name
+            string archiveName = $"{projectName}_{archiveIndexStr}_{shortHash}.zip";
+            string archivePath = Path.Combine(cacheDir, archiveName);
             Archiver.CreateZip(filesToUpload, Directory.GetCurrentDirectory(), archivePath, branch, commit);
 
             // Remove temporary manifest after packaging
@@ -99,4 +105,5 @@ namespace BigFileSynchronizer.Commands
             Console.WriteLine("[Push] Upload and state update complete.");
         }
     }
+
 }

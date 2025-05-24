@@ -22,7 +22,7 @@ namespace BigFileSynchronizer.Commands
             }
 
             // 2. Создание директории конфигов
-            string configDir = Path.Combine(root, ".bfs");
+            string configDir = Path.Combine(root, ".config_bfs");
             Directory.CreateDirectory(configDir);
 
             // 3. Создание config.json
@@ -35,7 +35,7 @@ namespace BigFileSynchronizer.Commands
                 Paths = new() { "Assets/", "StreamingAssets/" },
                 ArchiveFormat = "zip",
                 MaxArchiveSizeMB = 750,
-                MinFileSizeMB = 2,
+                MinFileSizeMB = 5,
                 IncludeExtensions = new()
                 {
                     ".fbx", ".obj", ".blend", ".dae", ".3ds", ".gltf", ".glb",

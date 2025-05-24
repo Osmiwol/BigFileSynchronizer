@@ -10,11 +10,11 @@ namespace BigFileSynchronizer.Commands
     {
         public static void Execute()
         {
-            string configPath = Path.Combine(".bfs", "config.json");
+            string configPath = Path.Combine(".config_bfs", "config.json");
 
             if (!File.Exists(configPath))
             {
-                Console.WriteLine("[Scan] Config not found: .bfs/config.json");
+                Console.WriteLine("[Scan] Config not found: .config_bfs/config.json");
                 return;
             }
 
@@ -37,4 +37,5 @@ namespace BigFileSynchronizer.Commands
             Console.WriteLine($"[Scan] Total: {files.Count} file(s).");
         }
     }
+
 }

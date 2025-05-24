@@ -11,12 +11,6 @@ namespace BigFileSynchronizer.Utils
     {
         public static void CreateZip(List<string> filePaths, string rootDirectory, string outputZipPath, string branchName, string fullCommitHash)
         {
-            // Remove old archive if it already exists
-            if (File.Exists(outputZipPath))
-            {
-                File.Delete(outputZipPath);
-            }
-
             Directory.CreateDirectory(Path.GetDirectoryName(outputZipPath)!);
 
             using var archive = ZipFile.Open(outputZipPath, ZipArchiveMode.Create);
@@ -27,9 +21,17 @@ namespace BigFileSynchronizer.Utils
                 archive.CreateEntryFromFile(fullPath, relativePath, CompressionLevel.Optimal);
             }
 
-            // Manifest is already generated outside, no need to regenerate here (optional)
-        }
+            // creating manifest-file
+            string shortHash = !string.IsNullOrWhiteSpace(fullCommitHash) && fullCommitHash.Length >= 7
+                ? fullCommitHash.Substring(0, 7)
+                : "nogit";
+            string manifestName = $"manifest_{branchName}_{shortHash}.txt";
+            string manifestContent = GenerateManifestContent(filePaths, branchName, fullCommitHash);
+            var manifestEntry = archive.CreateEntry(manifestName);
 
+            using var writer = new StreamWriter(manifestEntry.Open(), Encoding.UTF8);
+            writer.Write(manifestContent);
+        }
 
         private static string GenerateManifestContent(List<string> paths, string branch, string fullHash)
         {

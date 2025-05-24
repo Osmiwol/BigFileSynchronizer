@@ -83,6 +83,7 @@ crashlytics-build.properties
 upload_mock/
 .state/
 .bfs/
+.config_bfs/
 
 # Ignore all bin/ and obj/ folders recursively
 bin/

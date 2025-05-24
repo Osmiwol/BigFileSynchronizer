@@ -5,10 +5,14 @@ class Programm
     {
         if (args.Length == 0)
         {
-            Console.WriteLine("BigFileSynchronizer by osmiwol: no command provided.");
-            Console.WriteLine("Try: init, push, scan, help");
+            Console.WriteLine("BigFileSynchronizer is a console tool. Please run it with command-line arguments.");
+            Console.WriteLine();
+            HelpCommand.Execute();
+            Console.WriteLine("press any key to exit...");
+            Console.ReadKey();
             return;
         }
+
 
         switch (args[0].ToLower())
         {

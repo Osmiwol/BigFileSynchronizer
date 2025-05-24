@@ -7,8 +7,8 @@ namespace BigFileSynchronizer.Commands
     {
         public static void Execute()
         {
-            DeleteDir(".bfs");
-            DeleteDir("build");
+            DeleteDir(".config_bfs");
+            DeleteDir("bfs_cache");
 
             string hookPath = Path.Combine(".git", "hooks", "pre-push");
             string hookPathCmd = Path.Combine(".git", "hooks", "pre-push.cmd");
@@ -16,7 +16,7 @@ namespace BigFileSynchronizer.Commands
             DeleteFile(hookPath);
             DeleteFile(hookPathCmd);
 
-            Console.WriteLine("[Reset] Note: BigFileSynchronizer.exe was not deleted (currently running). Delete manually if needed.");
+            Console.WriteLine("[Reset] Note: bfsgit.exe was not deleted (currently running). Delete manually if needed.");
             Console.WriteLine("[Reset] Done.");
         }
 
@@ -52,4 +52,5 @@ namespace BigFileSynchronizer.Commands
             }
         }
     }
+
 }

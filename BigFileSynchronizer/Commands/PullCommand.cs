@@ -13,10 +13,11 @@ namespace BigFileSynchronizer.Commands
     {
         public static void Execute()
         {
-            string configPath = Path.Combine(".bfs", "config.json");
-            string driveLinksPath = Path.Combine(".bfs", "drive_links.json");
-            string serviceAccountPath = Path.Combine(".bfs", "service_account.json");
-            string buildDir = "build";
+            // Папка конфигурации и кэша
+            string configPath = Path.Combine(".config_bfs", "config.json");
+            string driveLinksPath = Path.Combine(".config_bfs", "drive_links.json");
+            string serviceAccountPath = Path.Combine(".config_bfs", "service_account.json");
+            string cacheDir = "bfs_cache";
 
             if (!File.Exists(configPath) || !File.Exists(serviceAccountPath))
             {
@@ -41,8 +42,8 @@ namespace BigFileSynchronizer.Commands
 
                 Console.WriteLine($"[Pull] Restoring: {relativePath}");
 
-                string tempArchive = Path.Combine(buildDir, $"restore_{entry.DriveId}.zip");
-                Directory.CreateDirectory(buildDir);
+                string tempArchive = Path.Combine(cacheDir, $"restore_{entry.DriveId}.zip");
+                Directory.CreateDirectory(cacheDir);
 
                 uploader.DownloadFile(entry.DriveId, tempArchive);
 

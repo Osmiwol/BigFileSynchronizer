@@ -31,6 +31,10 @@ namespace BigFileSynchronizer.Core
 
             _uploadFolderId = uploadFolderId ?? "root";
         }
+        public DriveService GetDriveService()
+        {
+            return _driveService;
+        }
 
         public string UploadFile(string localPath)
         {
@@ -78,5 +82,8 @@ namespace BigFileSynchronizer.Core
             listRequest.Q = "trashed = false";
             listRequest.Execute();
         }
+
+        
+
     }
 }
