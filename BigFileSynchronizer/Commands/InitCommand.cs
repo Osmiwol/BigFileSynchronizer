@@ -67,17 +67,21 @@ namespace BigFileSynchronizer.Commands
             return
                 "#!/bin/sh\n" +
                 "echo \"[BFS] Syncing assets before push...\"\n" +
-                "case \"$SHELL\" in\n" +
-                "  */bash*) ./bfsgit.exe push ;;\n" +
-                "  */sh*) ./bfsgit.exe push ;;\n" +
-                "  *) cmd /c bfsgit.exe push ;;\n" +
-                "esac\n" +
+                "if [ -f ./bfsgit ]; then\n" +
+                "  ./bfsgit push\n" +
+                "elif [ -f ./bfsgit.exe ]; then\n" +
+                "  ./bfsgit.exe push\n" +
+                "else\n" +
+                "  echo \"[BFS] bfsgit(.exe) not found.\"\n" +
+                "  exit 1\n" +
+                "fi\n" +
                 "result=$?\n" +
                 "if [ $result -ne 0 ]; then\n" +
                 "  echo \"[BFS] Sync failed. Push aborted.\"\n" +
                 "  exit 1\n" +
                 "fi\n";
         }
+
 
         private static void MakeExecutable(string path)
         {
