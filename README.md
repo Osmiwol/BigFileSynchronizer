@@ -1,131 +1,113 @@
-# BigFileSynchronizer
+# bfsgit (BigFileSynchronizer)
 
-> Automatically uploads large game assets (models, audio, textures, etc.) to cloud storage (Google Drive) during `git push`.  
-> Designed for Unity, extendable to Godot, Unreal, and other engines.
-
----
-
-## 🔧 Why this tool?
-
-Game projects often contain huge files (FBX, MP3, PNG, WAV) that shouldn't be versioned in Git.  
-BigFileSynchronizer offloads them to the cloud during push — so your repository stays fast and clean.
-
-No Git LFS, no Dropbox hacking, no manual steps.
+**bfsgit** is a cross-platform CLI utility for game developers that automatically uploads large assets (fbx, png, wav, mp3, etc.) from your project to Google Drive during `git push`, keeping your git history clean.
 
 ---
 
-## ✅ Features (MVP)
+## 🚀 Getting Started
 
-- 🔗 Integrates with `git` via `pre-push` hook
-- 🔍 Scans your Unity project for large assets
-- 📦 Archives and uploads only new or changed files
-- ☁️ Google Drive backend
-- 📝 Tracks uploaded files in local cache (`drive_links.json`)
-- ⚙️ Configurable via `BigFileSynchronizer.config.json`
+1. **Initialize your git project (if needed):**
+    ```bash
+    git init
+    ```
+
+2. **Initialize bfsgit in your project:**
+    ```bash
+    bfsgit.exe init
+    ```
+
+3. **Authorize Google Drive (service account):**
+    ```bash
+    bfsgit.exe auth path/to/service_account.json
+    ```
+    > When prompted, enter the **Google Drive folder ID**.  
+    > **This must be a folder you created in "My Drive" and shared with your service account as "Editor".**  
+    > Root is **not** supported!
+
+4. **Add your large assets as usual:**
+    - You don't need to commit big files to git, just keep them in your project folders (e.g., `Assets/`, `StreamingAssets/`, etc.)
+
+5. **Push your changes:**
+    ```bash
+    git push
+    ```
+    > bfsgit will automatically scan, archive, and upload your large assets before every push.
 
 ---
 
-## 🚀 Getting started
+## 📁 Project Structure
 
-1. **Clone your Unity project**  
-   (or create one with `git init`)
-
-2. **Download and run the synchronizer**  
-   ```bash
-   BigFileSynchronizer.exe init
-   ```
-
-3. **Push as usual**  
-   ```bash
-   git push
-   ```
-
-   The tool will scan, archive, and upload large assets before push.
-
----
-
-## 📁 Example config (auto-created)
-
-```json
-{
-  "project": "My Unity Game",
-  "cloud": "GoogleDrive",
-  "paths": [ "Assets/", "StreamingAssets/" ],
-  "archiveFormat": "zip",
-  "maxArchiveSizeMB": 750,
-  "minFileSizeMB": 5,
-  "includeExtensions": [
-    ".fbx", ".obj", ".png", ".jpg", ".wav", ".mp3", ".txt", ".json"
-  ]
-}
+```
+/your-game-project/
+│
+├── .config_bfs/
+│   ├── config.json
+│   ├── drive_links.json
+│   ├── service_account.json
+│
+├── bfs_cache/          # Temporary ZIP archives for upload/restore
+├── .git/hooks/pre-push # bfsgit auto-sync hook
+├── bfsgit.exe
+├── README.md
+└── .gitignore
 ```
 
 ---
 
-## 📦 Roadmap
+## 🛠 Main CLI Commands
 
-- [x] Git hook integration (`pre-push`)
-- [x] Local file scanner with extension & size filter
-- [x] Archive creation (`.zip`)
-- [x] Mock uploader with cache
-- [x] Real Google Drive integration
-- [x] `pull` command to restore missing assets
-- [ ] Support for Godot / Unreal / GameMaker
-- [ ] GUI version (Pro)
-- [ ] Multi-cloud support (Dropbox, S3, etc.)
+- `bfsgit.exe init`  
+  Initialize the project, create `.config_bfs/`, set up git hook, default config.
 
----
+- `bfsgit.exe auth path/to/service_account.json`  
+  Authorize service account and set Google Drive folder ID (required).
 
-## Setup
-👉 Need help setting up Google Drive? [See full setup guide](./SETUP_GOOGLE_DRIVE.md)
-👉 See all available CLI commands: [COMMANDS.md](./docs/COMMANDS.md)
+- `bfsgit.exe push`  
+  Scan, archive, and upload new/changed assets to Google Drive.
 
+- `bfsgit.exe pull`  
+  Restore missing assets from cloud archives.
 
-## 📜 License
+- `bfsgit.exe scan`  
+  Show what assets would be archived/uploaded.
 
-MIT — use it, modify it, integrate it.  
-Made by [@osmiwol](https://github.com/osmiwol)
+- `bfsgit.exe reset`  
+  Delete `.config_bfs/`, `bfs_cache/`, and git hooks. Full clean/reset.
 
----
-
-## 🇷🇺 Русская версия
-
-**BigFileSynchronizer** — это инструмент, который автоматически загружает крупные игровые ассеты (3D-модели, музыку, текстуры и т.д.) в облачное хранилище (Google Drive) при `git push`.
-
-Разработано для Unity, в будущем будет расширено до Godot, Unreal и других движков.
-
-### Возможности:
-
-- Интеграция через git `pre-push` хук
-- Сканирование ассетов по расширениям и размеру
-- Архивирование только новых/изменённых файлов
-- Загрузка в облако
-- Хранение информации о загруженных файлах
-- Настройка через `BigFileSynchronizer.config.json`
-
-### Как начать:
-
-```bash
-git init
-BigFileSynchronizer.exe init
-git push
-```
-
-### Пример конфига:
-
-```json
-{
-  "paths": [ "Assets/", "StreamingAssets/" ],
-  "minFileSizeMB": 2,
-  "includeExtensions": [".fbx", ".png", ".wav"]
-}
-```
-
-
-## Setup
-👉 Если нужна помощь с настройкой Google Disk? [See full setup guide](./SETUP_GOOGLE_DRIVE.md)
-👉 Посмотреть все доступные CLI команды: [COMMANDS.md](./docs/COMMANDS.md)
+- `bfsgit.exe help`  
+  Show all commands and usage.
 
 ---
 
-[Back to English version ↑](#bigfilesynchronizer)
+## ☁️ Google Drive Setup
+
+- **See detailed setup in `SETUP_GOOGLE_DRIVE.md`**
+- Only folder IDs from "My Drive" are supported.
+- Service account **must** be shared as "Editor" on that folder.
+- `root` is **not supported**.
+
+---
+
+## ℹ️ Notes
+
+- Works on Windows (`bfsgit.exe`) and Linux (`bfsgit`).
+- Your git history stays clean — only metadata in git, big files go to the cloud.
+- MVP: Google Drive only. Other clouds (Yandex Disk, Dropbox, S3) are planned for future versions.
+
+---
+
+## 🤝 Contributing & Feedback
+
+- For bug reports or feature requests, open an [Issue](https://github.com/Osmiwol/BigFileSynchronizer/issues).
+- For suggestions or code contributions, submit a Pull Request.
+- If you like the project — star the repo and share your experience!
+
+---
+
+## 📝 License
+
+MIT — use, modify, and distribute freely.
+
+---
+
+**Happy game dev!**

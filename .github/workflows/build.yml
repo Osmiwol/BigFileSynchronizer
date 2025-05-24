@@ -1,0 +1,40 @@
+name: Build bfsgit for Windows and Linux
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+    - name: Publish Windows
+      run: dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish
+    - uses: actions/upload-artifact@v4
+      with:
+        name: bfsgit-win-x64
+        path: ./publish/bfsgit.exe
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+    - name: Publish Linux
+      run: dotnet publish -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -o ./publish
+    - name: Rename binary for Linux
+      run: mv ./publish/bfsgit ./publish/bfsgit-linux
+    - uses: actions/upload-artifact@v4
+      with:
+        name: bfsgit-linux-x64
+        path: ./publish/bfsgit-linux

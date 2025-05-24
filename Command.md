@@ -1,65 +1,80 @@
-BigFileSynchronizer — CLI Commands:
+# bfsgit Command Reference
 
-init
-Description:
+## init
 Initializes the project by creating:
-	.bfs/config.json
-	.bfs/drive_links.json
-	.git/hooks/pre-push
+- .config_bfs/config.json
+- .config_bfs/drive_links.json
+- .git/hooks/pre-push
 
-Usage:
-BigFileSynchronizer.exe init
---
-auth <path-to-service_account.json>
-Description:
+**Usage:**
+```
+bfsgit.exe init
+```
+
+---
+
+## auth <path-to_service_account.json>
 Authorizes Google Drive access via a service account.
-Copies service_account.json into .bfs/
-Activates the service account
-Allows saving a Google Drive folder ID (optional)
-Usage:
-BigFileSynchronizer.exe auth path/to/service_account.json
---
-push
+- Copies `service_account.json` into `.config_bfs/`
+- Activates the service account
+- Requires you to enter a Google Drive folder ID (root is NOT supported!)
 
-Description:
-Scans the project for new or modified large assets
-Archives them
-Uploads them to Google Drive
-Updates .bfs/drive_links.json
-Usage:
-BigFileSynchronizer.exe push
---
-pull
+**Usage:**
+```
+bfsgit.exe auth path/to/service_account.json
+```
 
-Description:
-Checks for missing or corrupted local assets
-Downloads and restores them from Google Drive archives
-Usage:
-BigFileSynchronizer.exe pull
---
-scan
+---
 
-Description:
-Scans the project
-Displays all large assets found according to the current configuration
-Allows updating the paths in config.json (planned)
-Usage:
-BigFileSynchronizer.exe scan
---
-reset
+## push
+Scans the project for new or modified large assets, archives them, uploads to Google Drive, and updates `.config_bfs/drive_links.json`.
 
-Description:
+**Usage:**
+```
+bfsgit.exe push
+```
+
+---
+
+## pull
+Checks for missing or corrupted local assets. Downloads and restores them from Google Drive archives.
+
+**Usage:**
+```
+bfsgit.exe pull
+```
+
+---
+
+## scan
+Scans the project and displays all large assets found according to the current configuration.
+
+**Usage:**
+```
+bfsgit.exe scan
+```
+
+---
+
+## reset
 Deletes generated files and folders:
-.bfs/
-build/
-Git hooks
-Does NOT delete the running .exe
-Usage:
-BigFileSynchronizer.exe reset
---
-help
+- `.config_bfs/`
+- `bfs_cache/`
+- git hooks
 
-Description:
+**Does NOT delete the running .exe**
+
+**Usage:**
+```
+bfsgit.exe reset
+```
+
+---
+
+## help
 Displays all available commands and short descriptions.
-Usage:
-BigFileSynchronizer.exe help
+
+**Usage:**
+```
+bfsgit.exe help
+```
