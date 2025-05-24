@@ -1,22 +1,26 @@
 name: Build bfsgit for Windows and Linux
 
+# Explicit permissions for the default GITHUB_TOKEN
+permissions:
+  contents: write   # needed to create releases/tags
+  packages: read
+
 on:
   push:
-    branches: [ main ]
+    branches: [ main ]      # we create releases only on direct pushes to main
   pull_request:
-    branches: [ main ]
+    branches: [ main ]      # still run CI on PRs, but without releasing
 
 jobs:
-  build-and-release:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout repository
+      # Checkout sources
       - uses: actions/checkout@v4
 
-      # Setup .NET SDK
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+      # Install .NET SDK
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
 
@@ -28,21 +32,21 @@ jobs:
       - name: Publish for Linux
         run: dotnet publish -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -o ./publish
 
-      # Rename Linux binary for clarity
+      # Rename Linux file
       - name: Rename Linux binary
         run: mv ./publish/bfsgit ./publish/bfsgit-linux
 
-      # Upload both binaries as a single artifact
-      - name: Upload both binaries as single artifact
-        uses: actions/upload-artifact@v4
+      # Upload both files as ONE artifact
+      - uses: actions/upload-artifact@v4
         with:
           name: release-assets
           path: |
             ./publish/bfsgit.exe
             ./publish/bfsgit-linux
 
-      # Create GitHub Release and attach both binaries
+      # Create GitHub release (only on push to main)
       - name: Create GitHub Release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v1
         with:
           tag_name: autobuild-${{ github.run_number }}
