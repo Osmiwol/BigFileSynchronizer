@@ -68,9 +68,9 @@ namespace BigFileSynchronizer.Commands
                 "#!/bin/sh\n" +
                 "echo \"[BFS] Syncing assets before push...\"\n" +
                 "case \"$SHELL\" in\n" +
-                "  */bash*) ./BigFileSynchronizer.exe push ;;\n" +
-                "  */sh*) ./BigFileSynchronizer.exe push ;;\n" +
-                "  *) cmd /c BigFileSynchronizer.exe push ;;\n" +
+                "  */bash*) ./bfsgit.exe push ;;\n" +
+                "  */sh*) ./bfsgit.exe push ;;\n" +
+                "  *) cmd /c bfsgit.exe push ;;\n" +
                 "esac\n" +
                 "result=$?\n" +
                 "if [ $result -ne 0 ]; then\n" +
