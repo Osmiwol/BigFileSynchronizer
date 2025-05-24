@@ -7,69 +7,50 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  build-and-release:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
+
     steps:
-    - uses: actions/checkout@v4
+      # Checkout repository
+      - uses: actions/checkout@v4
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '8.0.x'
+      # Setup .NET SDK
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
 
-    - name: Publish Windows
-      if: matrix.os == 'windows-latest'
-      run: dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish
+      # Publish Windows binary
+      - name: Publish for Windows
+        run: dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish
 
-    - name: Publish Linux
-      if: matrix.os == 'ubuntu-latest'
-      run: dotnet publish -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -o ./publish
+      # Publish Linux binary
+      - name: Publish for Linux
+        run: dotnet publish -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -o ./publish
 
-    - name: Rename Linux binary
-      if: matrix.os == 'ubuntu-latest'
-      run: mv ./publish/bfsgit ./publish/bfsgit-linux
+      # Rename Linux binary for clarity
+      - name: Rename Linux binary
+        run: mv ./publish/bfsgit ./publish/bfsgit-linux
 
-    - uses: actions/upload-artifact@v4
-      with:
-        name: bfsgit-${{ matrix.os }}
-        path: |
-          ./publish/bfsgit.exe
-          ./publish/bfsgit-linux
+      # Upload both binaries as a single artifact
+      - name: Upload both binaries as single artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-assets
+          path: |
+            ./publish/bfsgit.exe
+            ./publish/bfsgit-linux
 
-    # save binary for release
-    - name: Upload release assets
-      uses: actions/upload-artifact@v4
-      with:
-        name: release-assets
-        path: |
-          ./publish/bfsgit.exe
-          ./publish/bfsgit-linux
-
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-
-    # download artifact job build
-    - name: Download release assets
-      uses: actions/download-artifact@v4
-      with:
-        name: release-assets
-        path: ./release-assets
-
-    - name: Create GitHub Release
-      uses: softprops/action-gh-release@v1
-      with:
-        tag_name: autobuild-${{ github.run_number }}
-        name: bfsgit autobuild ${{ github.run_number }}
-        body: |
-          Automating build for Windows and Linux.
-        files: |
-          ./release-assets/bfsgit.exe
-          ./release-assets/bfsgit-linux
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Create GitHub Release and attach both binaries
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: autobuild-${{ github.run_number }}
+          name: bfsgit autobuild ${{ github.run_number }}
+          body: |
+            Automatic build for Windows and Linux.
+          files: |
+            ./publish/bfsgit.exe
+            ./publish/bfsgit-linux
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
