@@ -38,7 +38,7 @@ namespace BigFileSynchronizer.Commands
             File.Copy(inputPath, targetPath, overwrite: true);
             Console.WriteLine("[Auth] service_account.json copied to .bfs/");
 
-            // Activation Drive API
+            // Try to activate Google Drive API
             try
             {
                 var uploader = new GoogleDriveUploader(targetPath);
@@ -51,26 +51,32 @@ namespace BigFileSynchronizer.Commands
                 return;
             }
 
-            Console.WriteLine("Введите Google Drive folder ID (или нажмите Enter, чтобы использовать root):");
-            string? folderId = Console.ReadLine()?.Trim();
-
             string configPath = Path.Combine(".bfs", "config.json");
-            if (File.Exists(configPath))
+            if (!File.Exists(configPath))
             {
-                var config = Config.Load(configPath);
-                config.Cloud = "GoogleDrive";
-                if (!string.IsNullOrEmpty(folderId))
-                {
-                    config.CloudFolderId = folderId;
-                    Console.WriteLine($"[Auth] GoogleDriveFolderId saved: {folderId}");
-                }
-                config.Save(configPath);
+                Console.WriteLine("[Auth] config.json not found — run init first.");
+                return;
+            }
+
+            var config = Config.Load(configPath);
+            config.Cloud = "GoogleDrive";
+
+            bool needInput = string.IsNullOrEmpty(config.CloudFolderId) || config.CloudFolderId == "null";
+
+            if (needInput)
+            {
+                Console.WriteLine("Enter Google Drive folder ID (or press Enter to use root):");
+                string? folderId = Console.ReadLine()?.Trim();
+
+                config.CloudFolderId = string.IsNullOrEmpty(folderId) ? "root" : folderId;
+                Console.WriteLine($"[Auth] GoogleDriveFolderId set to: {config.CloudFolderId}");
             }
             else
             {
-                Console.WriteLine("[Auth] config.json not found — run init first.");
+                Console.WriteLine($"[Auth] Existing folder ID: {config.CloudFolderId}");
             }
 
+            config.Save(configPath);
             Console.WriteLine("[Auth] Complete.");
         }
     }

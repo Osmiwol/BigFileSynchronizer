@@ -35,7 +35,7 @@ namespace BigFileSynchronizer.Commands
                 Paths = new() { "Assets/", "StreamingAssets/" },
                 ArchiveFormat = "zip",
                 MaxArchiveSizeMB = 750,
-                MinFileSizeMB = 5,
+                MinFileSizeMB = 2,
                 IncludeExtensions = new()
                 {
                     ".fbx", ".obj", ".blend", ".dae", ".3ds", ".gltf", ".glb",

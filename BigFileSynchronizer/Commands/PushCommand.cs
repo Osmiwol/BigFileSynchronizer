@@ -48,24 +48,41 @@ namespace BigFileSynchronizer.Commands
             }
 
             // Get git branch and commit info
-            string branch = GitHelper.GetBranchName();
+            string branch = GitHelper.GetBranchName() ?? "nogit";
             string commit = GitHelper.GetFullCommitHash();
-            string driveId = Hasher.ComputeSHA256(filesToUpload[0]);
+            string driveId = Hasher.ComputeSHA256(filesToUpload[0]);            
 
-            // Create archive
+            if (string.IsNullOrWhiteSpace(commit) || commit.Length < 7)
+            {
+                Console.WriteLine("[Push] Git not available — using fallback commit ID.");
+                commit = Guid.NewGuid().ToString("N"); // random unique ID
+            }
+
+
+            // Generate human-readable manifest file and include it in the archive
+            string manifestPath = ManifestGenerator.CreateManifest(branch, commit, filesToUpload);
+            filesToUpload.Add(manifestPath); // Include manifest in the archive
+
+            // Create archive with files + manifest
             string archiveName = $"archive_{driveId}.zip";
             string archivePath = Path.Combine("build", archiveName);
             Archiver.CreateZip(filesToUpload, Directory.GetCurrentDirectory(), archivePath, branch, commit);
+
+            // Remove temporary manifest after packaging
+            if (File.Exists(manifestPath))
+                File.Delete(manifestPath);
 
             // Upload archive to Google Drive
             var uploader = new GoogleDriveUploader(serviceAccountPath, config.CloudFolderId);
             string uploadedId = uploader.UploadFile(archivePath);
             Console.WriteLine($"[Push] Uploaded to Google Drive: ID={uploadedId}");
 
-            // Update drive_links
+            // Update drive_links with new/updated files
             var now = DateTime.UtcNow;
             foreach (var file in filesToUpload)
             {
+                if (!File.Exists(file) || file.EndsWith(".txt")) continue; // Skip manifest entry
+
                 var size = new FileInfo(file).Length;
                 var hash = Hasher.ComputeSHA256(file);
 
